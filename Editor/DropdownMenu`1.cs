@@ -98,16 +98,24 @@
         protected override void InitializeSearchModeTree()
         {
             _searchModeTree.Clear();
+
+            if (string.IsNullOrWhiteSpace(_searchString))
+            {
+                _searchModeTree.AddRange(EnumerateNodes()
+                    .Where(node => node.Value != null));
+                return;
+            }
+
+            var searchTerms = _searchString.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
             _searchModeTree.AddRange(EnumerateNodes()
                 .Where(node => node.Value != null)
-                .Select(node =>
+                .Where(node =>
                 {
-                    bool includeInSearch = FuzzySearch.CanBeIncluded(_searchString, node.SearchName, out int score);
-                    return new { score, item = node, include = includeInSearch };
+                    var searchName = node.SearchName?.ToLower() ?? string.Empty;
+                    return searchTerms.All(term => searchName.Contains(term));
                 })
-                .Where(x => x.include)
-                .OrderByDescending(x => x.score)
-                .Select(x => x.item));
+                .OrderBy(node => node.SearchName));
         }
     }
 }
