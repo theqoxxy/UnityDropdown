@@ -1,4 +1,4 @@
-﻿namespace UnityDropdown.Editor
+namespace UnityDropdown.Editor
 {
     using System;
     using System.Collections.Generic;
@@ -99,7 +99,7 @@
                     DrawSearchToolbar();
             }
 
-            if ( ! IsInSearchMode)
+            if (!IsInSearchMode)
                 NoneElement?.DrawSelfAndChildren(default, default);
 
             using (_scrollbar.Draw())
@@ -139,7 +139,7 @@
             _searchString = DrawSearchField(innerToolbarArea, _searchString);
             bool changed = EditorGUI.EndChangeCheck();
 
-            if ( ! changed)
+            if (!changed)
                 return;
 
             if (string.IsNullOrEmpty(_searchString))
@@ -162,7 +162,7 @@
 
         private void EnableSearchMode()
         {
-            if ( ! IsInSearchMode)
+            if (!IsInSearchMode)
                 _scrollbar.ToTop();
 
             IsInSearchMode = true;
@@ -198,15 +198,16 @@
         {
             (Rect searchFieldArea, Rect buttonRect) = innerToolbarArea.CutVertically(DropdownStyle.IconSize, true);
 
-            bool keyDown = Event.current.type == EventType.KeyDown;
+            EventType originalEventType = Event.current.type;
 
             searchText = EditorGUIHelper.FocusedTextField(searchFieldArea, searchText, "Search",
                 DropdownStyle.SearchToolbarStyle, _searchFieldControlName);
 
-            // When the search field is in focus, it uses the keyDown event on DownArrow while doing nothing.
-            // We need this event for moving through the tree nodes.
-            if (keyDown)
-                Event.current.type = EventType.KeyDown;
+            if (GUI.GetNameOfFocusedControl() == _searchFieldControlName &&
+                originalEventType == EventType.KeyDown)
+            {
+                Event.current.Use();
+            }
 
             if (GUIHelper.CloseButton(buttonRect))
             {
